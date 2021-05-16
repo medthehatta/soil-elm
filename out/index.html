@@ -9,19 +9,6 @@
     <div id="main"></div>
     <script>
         const app = Elm.Main.init({node: document.getElementById("main")});
-        const canvas = document.getElementById("mapCanvas");
-        const canvasClicked = function(event) {
-            console.log("Clicked from js");
-            const canvasX = canvas.offsetLeft + canvas.clientLeft;
-            const canvasY = canvas.offsetTop + canvas.clientTop;
-            const point = {
-                "x": event.pageX - canvasX,
-                "y": event.pageY - canvasY
-            };
-            console.log(point);
-            app.ports.canvasClick.send(point);
-        }
-        canvas.addEventListener("click", canvasClicked, false);
     </script>
   </body>
 </html>

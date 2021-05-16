@@ -1,7 +1,6 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Browser exposing (element)
-import Canvas
 import Debug exposing (log)
 import Element exposing (..)
 import Element.Border as Border
@@ -11,6 +10,44 @@ import Html.Attributes as Attrs
 import Html.Events exposing (onClick, onMouseOut, onMouseOver)
 import Http
 import Json.Decode as D
+import Json.Decode.Pipeline exposing (required)
+
+
+testPayload : String
+testPayload =
+    """
+{"tile": "tile.png",
+ "pois": [{"name": "Market1", "coords": [22, 56]}
+         ]}
+"""
+
+
+type alias MapPayload =
+    { tile : String
+    , pois : List POI
+    }
+
+
+type alias POI =
+    { name : String
+    , coords : ( Int, Int )
+    }
+
+
+mapDecoder : D.Decoder MapPayload
+mapDecoder =
+    let
+        dCoords =
+            D.map2 pair D.int D.int
+
+        dPOI =
+            D.succeed POI
+                |> required "name" D.string
+                |> required "coords" dCoords
+    in
+    D.succeed MapPayload
+        |> required "tile" D.string
+        |> required "pois" (D.list dPOI)
 
 
 main =
@@ -27,34 +64,18 @@ init _ =
     ( Loading, Cmd.none )
 
 
-port canvasClick : (D.Value -> msg) -> Sub msg
-
-
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    let
-        clickPosDecoder =
-            D.map2 (\x -> \y -> ( x, y )) (D.field "x" D.int) (D.field "y" D.int)
+    Sub.none
 
-        readPos : D.Value -> Msg
-        readPos click =
-            let
-                found =
-                    D.decodeValue clickPosDecoder click
-            in
-            case found of
-                Ok x ->
-                    CanvasClicked x
 
-                Err _ ->
-                    Noop
-    in
-    canvasClick readPos
+pair : a -> a -> ( a, a )
+pair x y =
+    ( x, y )
 
 
 type Msg
     = Noop
-    | CanvasClicked ( Int, Int )
 
 
 type Model
@@ -67,8 +88,9 @@ update msg model =
         ( Noop, _ ) ->
             ( model, Cmd.none )
 
-        ( CanvasClicked _, _ ) ->
-            ( model, Cmd.none )
+
+
+--- VIEW
 
 
 view : Model -> Html Msg
@@ -90,7 +112,7 @@ viewMap model =
             row [ width fill ] [ txt "^" ]
 
         midRow =
-            row [ width fill ] [ txt "<", mapCanvas model, txt ">" ]
+            row [ width fill ] [ txt "<", viewMapMain model, txt ">" ]
 
         botRow =
             row [ width fill ] [ txt "v" ]
@@ -111,17 +133,9 @@ playerProps model =
     none
 
 
-mapCanvas : Model -> Element Msg
-mapCanvas model =
-    let
-        w =
-            500
-
-        h =
-            500
-    in
-    el [ width (px w), height (px h), htmlAttribute (Attrs.id "mapCanvas") ]
-        (html <| Canvas.toHtml ( w, h ) [] [])
+viewMapMain : Model -> Element Msg
+viewMapMain model =
+    el [ width (px 500), height (px 500) ] none
 
 
 txt : String -> Element Msg
