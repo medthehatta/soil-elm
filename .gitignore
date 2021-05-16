@@ -1,0 +1,5 @@
+elm-stuff
+*.sw[lmnop]
+out/elm.js
+node_modules
+package-lock.json
