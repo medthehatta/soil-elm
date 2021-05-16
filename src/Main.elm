@@ -44,13 +44,17 @@ type Model
     = Loading
 
 
-testPayload : String
-testPayload =
+testPayloadJSON : String
+testPayloadJSON =
     """
 {"tile": "tile.png",
- "pois": [{"name": "Market1", "coords": [22, 56]}
+ "pois": [{"name": "Market1", "coords": {"x": 22, "y": 56}}
          ]}
 """
+
+
+testPayload =
+    D.decodeString mapDecoder testPayloadJSON
 
 
 type alias MapPayload =
@@ -61,21 +65,29 @@ type alias MapPayload =
 
 type alias POI =
     { name : String
-    , coords : ( Int, Int )
+    , coords : Coords
     }
 
 
-pair : a -> a -> ( a, a )
-pair x y =
-    ( x, y )
+type alias Coords =
+    { x : Int, y : Int }
+
+
+coordsFromPair : Int -> Int -> Coords
+coordsFromPair x y =
+    { x = x, y = y }
 
 
 mapDecoder : D.Decoder MapPayload
 mapDecoder =
     let
+        dCoords : D.Decoder Coords
         dCoords =
-            D.map2 pair D.int D.int
+            D.succeed Coords
+                |> required "x" D.int
+                |> required "y" D.int
 
+        dPOI : D.Decoder POI
         dPOI =
             D.succeed POI
                 |> required "name" D.string
