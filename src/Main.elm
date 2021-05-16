@@ -11,6 +11,7 @@ import Html.Events exposing (onClick, onMouseOut, onMouseOver)
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline exposing (required)
+import Task exposing (Task)
 
 
 main =
@@ -24,7 +25,17 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading, Cmd.none )
+    let
+        msg : Msg
+        msg =
+            case testPayload of
+                Ok data ->
+                    GotPayload data
+
+                Err err ->
+                    GotBadPayload err
+    in
+    update msg Loading
 
 
 subscriptions : Model -> Sub Msg
@@ -38,10 +49,14 @@ subscriptions _ =
 
 type Msg
     = Noop
+    | GotPayload MapPayload
+    | GotBadPayload D.Error
 
 
 type Model
     = Loading
+    | MapDisplay MapPayload
+    | DecodeErrorDisplay D.Error
 
 
 testPayloadJSON : String
@@ -105,6 +120,12 @@ mapDecoder =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( GotPayload payload, _ ) ->
+            ( MapDisplay payload, Cmd.none )
+
+        ( GotBadPayload err, _ ) ->
+            ( DecodeErrorDisplay err, Cmd.none )
+
         ( Noop, _ ) ->
             ( model, Cmd.none )
 
@@ -115,7 +136,15 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    layout [] (uiView model)
+    case model of
+        Loading ->
+            layout [] (txt "Loading...")
+
+        MapDisplay payload ->
+            layout [] (uiView model)
+
+        DecodeErrorDisplay err ->
+            layout [] (el [] (text (D.errorToString err)))
 
 
 uiView : Model -> Element Msg
