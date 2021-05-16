@@ -13,6 +13,37 @@ import Json.Decode as D
 import Json.Decode.Pipeline exposing (required)
 
 
+main =
+    element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Loading, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+
+--- TYPES
+
+
+type Msg
+    = Noop
+
+
+type Model
+    = Loading
+
+
 testPayload : String
 testPayload =
     """
@@ -34,6 +65,11 @@ type alias POI =
     }
 
 
+pair : a -> a -> ( a, a )
+pair x y =
+    ( x, y )
+
+
 mapDecoder : D.Decoder MapPayload
 mapDecoder =
     let
@@ -50,36 +86,8 @@ mapDecoder =
         |> required "pois" (D.list dPOI)
 
 
-main =
-    element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
 
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Loading, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
-
-
-pair : a -> a -> ( a, a )
-pair x y =
-    ( x, y )
-
-
-type Msg
-    = Noop
-
-
-type Model
-    = Loading
+--- UPDATE
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
