@@ -68,6 +68,7 @@ testPayloadJSON =
 {"tile": "tile.png",
  "pois": [{"name": "Market1", "coords": {"x": 200, "y": 100}}
          ,{"name": "Market2", "coords": {"x": 390, "y": 440}}
+         ,{"name": "Market2", "coords": {"x": 12, "y": 440}}
          ]}
 """
 
@@ -206,7 +207,6 @@ viewMap payload =
 
         iconAt name { x, y } =
             htmlIcon "room"
-                |> html
                 |> el
                     [ moveRight (toFloat x)
                     , moveDown (toFloat y)
@@ -243,6 +243,6 @@ wut =
     explain Debug.todo
 
 
-htmlIcon : String -> Html Msg
+htmlIcon : String -> Element Msg
 htmlIcon name =
-    Html.span [ Attrs.class "material-icons" ] [ Html.text name ]
+    html <| Html.span [ Attrs.class "material-icons" ] [ Html.text name ]
