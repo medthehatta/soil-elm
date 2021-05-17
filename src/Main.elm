@@ -206,19 +206,31 @@ viewMap payload =
             [ width (px w), height (px h), Background.image payload.tile ]
 
         iconAt name { x, y } =
-            htmlIcon "room"
-                |> el
-                    [ moveRight (toFloat x)
-                    , moveDown (toFloat y)
-                    , Font.color (rgb 1 0 0)
-                    , pointer
-                    , onClick (Clicked name)
-                    ]
+            iconButton "room" (rgb 1 0 0) (Clicked name)
+                |> placeAt { x = x, y = y }
 
         points =
             List.map (\poi -> iconAt poi.name poi.coords) payload.pois
     in
     el baseAttrs (absolute points)
+
+
+iconElement : String -> Element.Color -> Element Msg
+iconElement name color =
+    Html.span [ Attrs.class "material-icons" ] [ Html.text name ]
+        |> html
+        |> el [ Font.color color ]
+
+
+iconButton : String -> Element.Color -> Msg -> Element Msg
+iconButton name color clickMsg =
+    iconElement name color
+        |> el [ pointer, onClick clickMsg ]
+
+
+placeAt : { x : Int, y : Int } -> Element Msg -> Element Msg
+placeAt { x, y } elem =
+    el [ moveRight (toFloat x), moveDown (toFloat y) ] elem
 
 
 absolute : List (Element Msg) -> Element Msg
@@ -241,8 +253,3 @@ txt s =
 wut : Attribute Msg
 wut =
     explain Debug.todo
-
-
-htmlIcon : String -> Element Msg
-htmlIcon name =
-    html <| Html.span [ Attrs.class "material-icons" ] [ Html.text name ]
